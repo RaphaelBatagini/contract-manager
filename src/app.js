@@ -68,4 +68,48 @@ app.get('/jobs/unpaid',getProfile,async (req, res) =>{
     res.json(jobs)
 })
 
+/**
+ * @returns the paid job
+ */
+app.post('/jobs/:job_id/pay',getProfile,async (req, res) =>{
+  const {Job,Contract,Profile} = req.app.get('models')
+  const {profile} = req
+  const {job_id} = req.params
+  const job = await Job.findOne({
+    where: {
+      id: job_id,
+      [Sequelize.Op.or]: [
+        {paid: false},
+        {paid: null}
+      ]
+    },
+    include: [{
+      model: Contract,
+      where: {
+        ['ClientId']: profile.id
+      }
+    }]
+  })
+  if(!job) return res.status(404).end()
+  const client = await Profile.findOne({
+    where: {
+      id: job.Contract.ClientId
+    }
+  })
+  const contractor = await Profile.findOne({
+    where: {
+      id: job.Contract.ContractorId
+    }
+  })
+  if(client.balance < job.price) return res.status(400).end('insufficient funds')
+  client.balance -= job.price
+  contractor.balance += job.price
+  job.paid = true
+  job.paymentDate = new Date()
+  await client.save()
+  await contractor.save()
+  await job.save()
+  res.json(job)
+})
+
 module.exports = app;
