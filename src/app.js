@@ -1,7 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const {sequelize, Profile} = require('./model')
-const {getProfile} = require('./middleware/getProfile')
+const {sequelize} = require('./model')
+const {getProfile} = require('./middleware/getProfile');
+const { Sequelize } = require('sequelize');
 const app = express();
 app.use(bodyParser.json());
 app.set('sequelize', sequelize)
@@ -23,4 +24,22 @@ app.get('/contracts/:id',getProfile,async (req, res) =>{
     if(!contract) return res.status(404).end()
     res.json(contract)
 })
+
+/**
+ * @returns all non terminated contracts for the current user
+ */
+app.get('/contracts',getProfile,async (req, res) =>{
+    const {Contract} = req.app.get('models')
+    const {profile} = req
+    const contracts = await Contract.findAll({
+      where: {
+        [profile.type === 'client' ? 'ClientId' :  'ContractorId']: profile.id,
+        status: {
+          [Sequelize.Op.ne]: 'terminated'
+        }
+      }
+    })
+    res.json(contracts)
+})
+
 module.exports = app;
