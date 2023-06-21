@@ -42,4 +42,27 @@ app.get('/contracts',getProfile,async (req, res) =>{
     res.json(contracts)
 })
 
+/**
+ * @returns all unpaid jobs for the current user
+ */
+app.get('/jobs/unpaid',getProfile,async (req, res) =>{
+    const {Job,Contract} = req.app.get('models')
+    const {profile} = req
+    const jobs = await Job.findAll({
+      where: {
+        paid: false
+      },
+      include: [{
+        model: Contract,
+        where: {
+          status: {
+            [Sequelize.Op.ne]: 'terminated'
+          },
+          [profile.type === 'client' ? 'ClientId' :  'ContractorId']: profile.id
+        }
+      }]
+    })
+    res.json(jobs)
+})
+
 module.exports = app;
