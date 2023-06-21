@@ -128,7 +128,7 @@ app.post("/jobs/:job_id/pay", getProfile, async (req, res) => {
 });
 
 /**
- * @returns the client with updated balance
+ * @returns void
  */
 app.post("/balances/deposit/:userId", getProfile, async (req, res) => {
   const { Profile, Job, Contract } = req.app.get("models");
@@ -167,7 +167,55 @@ app.post("/balances/deposit/:userId", getProfile, async (req, res) => {
   client.balance += depositAmount;
   await client.save();
 
-  res.json(client);
+  res.status(200).end();
 });
+
+/**
+ * @returns the profession that earned the most money in the query time range.
+ */
+app.get('/admin/best-profession', async (req, res) => {
+  const { Profile, Contract, Job } = req.app.get('models');
+  const { start, end } = req.query;
+
+  const professionStats = await Job.findAll({
+    attributes: [
+      [Sequelize.literal('`Contract->Contractor`.profession'), 'profession'],
+      [Sequelize.fn('sum', Sequelize.col('price')), 'totalEarned'],
+    ],
+    include: [
+      {
+        model: Contract,
+        as: 'Contract',
+        include: [
+          {
+            model: Profile,
+            as: 'Contractor',
+            where: {
+              profession: { [Sequelize.Op.not]: null },
+              type: 'contractor',
+            },
+          },
+        ],
+      },
+    ],
+    where: {
+      paid: true,
+      paymentDate: {
+        [Sequelize.Op.between]: [new Date(start), new Date(end)],
+      },
+    },
+    group: ['`Contract->Contractor`.profession'],
+    order: [[Sequelize.literal('totalEarned'), 'DESC']],
+    limit: 1,
+  });
+
+  if (professionStats.length === 0) {
+    return res.status(404).json({ message: 'No data found for the given time range' });
+  }
+
+  const bestProfession = professionStats[0].getDataValue('profession');
+  res.json({ bestProfession });
+});
+
 
 module.exports = app;
