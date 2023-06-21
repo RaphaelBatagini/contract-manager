@@ -50,7 +50,10 @@ app.get('/jobs/unpaid',getProfile,async (req, res) =>{
     const {profile} = req
     const jobs = await Job.findAll({
       where: {
-        paid: false
+        [Sequelize.Op.or]: [
+          {paid: false},
+          {paid: null}
+        ]
       },
       include: [{
         model: Contract,
