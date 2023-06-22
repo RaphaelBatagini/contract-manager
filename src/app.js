@@ -16,14 +16,13 @@ app.get("/contracts/:id", getProfile, async (req, res) => {
   const { id } = req.params;
   const { profile } = req;
 
-  const contract = await Contract.findOne({
-    where: {
-      id,
-      [profile.type === "client" ? "ClientId" : "ContractorId"]: profile.id,
-    },
-  });
+  const contract = await Contract.findOne({ where: { id } });
 
-  if (!contract) return res.status(404).end('contract not found');
+  if (!contract) return res.status(404).end("contract not found");
+
+  if (contract.ClientId !== profile.id && contract.ContractorId !== profile.id) {
+    return res.status(403).end("contract doesn't belong to the user");
+  }
 
   res.json(contract);
 });
@@ -37,7 +36,10 @@ app.get("/contracts", getProfile, async (req, res) => {
 
   const contracts = await Contract.findAll({
     where: {
-      [profile.type === "client" ? "ClientId" : "ContractorId"]: profile.id,
+      [Sequelize.Op.or]: [
+        { ClientId: profile.id },
+        { ContractorId: profile.id },
+      ],
       status: {
         [Sequelize.Op.ne]: "terminated",
       },

@@ -1,3 +1,4 @@
 node_modules
 .DS_STORE
 database.sqlite3
+test_database.sqlite3
