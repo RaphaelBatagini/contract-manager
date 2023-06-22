@@ -3,9 +3,10 @@ const { Sequelize } = require('sequelize');
 const sequelize = new Sequelize({
   dialect: 'sqlite',
   storage: './test_database.sqlite3', // Specify a separate database file for testing
+  logging: false,
 });
 
-beforeAll(async () => {
+beforeEach(async () => {
   await sequelize.sync({ force: true }); // Drops existing tables and recreates them
 });
 

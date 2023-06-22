@@ -67,7 +67,10 @@ app.get("/jobs/unpaid", getProfile, async (req, res) => {
           status: {
             [Sequelize.Op.ne]: "terminated",
           },
-          [profile.type === "client" ? "ClientId" : "ContractorId"]: profile.id,
+          [Sequelize.Op.or]: [
+            { ClientId: profile.id },
+            { ContractorId: profile.id },
+          ],
         },
       },
     ],

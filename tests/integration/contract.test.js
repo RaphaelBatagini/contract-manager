@@ -2,13 +2,8 @@ const request = require('supertest');
 const app = require('../../src/app');
 const { createContractMock, createProfileMock } = require('../mocks/models');
 const { faker } = require('@faker-js/faker');
-const sequelize = require('../setup');
 
 describe('Contract Routes', () => {
-  beforeEach(async () => {
-    await sequelize.sync({ force: true });
-  });
-
   describe('GET /contracts/:id', () => {
     it('should return a contract by id on a client request', async () => {
       const contract = await createContractMock();
