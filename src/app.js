@@ -217,5 +217,53 @@ app.get('/admin/best-profession', async (req, res) => {
   res.json({ bestProfession });
 });
 
+/**
+ * @returns the profession that earned the most money in the query time range.
+ */
+app.get('/admin/best-clients', async (req, res) => {
+  const { Profile, Contract, Job } = req.app.get('models');
+  const { start, end } = req.query;
+  const { limit } = req.query || 2;
+
+  const clientStats = await Job.findAll({
+    raw: true,
+    attributes: [
+      [Sequelize.literal('`Contract->Client`.id'), 'id'],
+      [Sequelize.literal('`Contract->Client`.firstName || \' \' || `Contract->Client`.lastName'), 'fullName'],
+      [Sequelize.fn('sum', Sequelize.col('price')), 'paid'],
+    ],
+    include: [
+      {
+        model: Contract,
+        as: 'Contract',
+        include: [
+          {
+            model: Profile,
+            as: 'Client',
+            where: {
+              type: 'client',
+            },
+          },
+        ],
+      },
+    ],
+    where: {
+      paid: true,
+      paymentDate: {
+        [Sequelize.Op.between]: [new Date(start), new Date(end)],
+      },
+    },
+    group: ['`Contract->Client`.id'],
+    order: [[Sequelize.literal('paid'), 'DESC']],
+    limit,
+  });
+
+  if (clientStats.length === 0) {
+    return res.status(404).json({ message: 'No data found for the given time range' });
+  }
+
+  res.json({ clientStats });
+});
+
 
 module.exports = app;
