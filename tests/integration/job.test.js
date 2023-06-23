@@ -1,6 +1,5 @@
-const request = require('supertest');
-const app = require('../../src/app');
 const { createProfileMock, createJobMock } = require('../mocks/models');
+const { agent } = require('../setup');
 
 describe('Job Routes', () => {
   describe('GET /jobs/unpaid', () => {
@@ -9,7 +8,7 @@ describe('Job Routes', () => {
       const job = await createJobMock({ paid: false, ClientId: client.id });
       await createJobMock({ paid: true, ContractId: job.ContractId });
 
-      const res = await request(app)
+      const res = await agent
         .get('/jobs/unpaid')
         .set('profile_id', client.id)
         .expect(200);

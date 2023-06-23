@@ -11,9 +11,9 @@
     "sqlite3": "^5.0.0"
   },
   "scripts": {
-    "start": "nodemon ./src/server.js",
+    "start": "NODE_ENV=development nodemon ./src/server.js",
     "seed": "node ./scripts/seedDb.js",
-    "test": "node tests/runTests.js"
+    "test": "NODE_ENV=test node tests/runTests.js"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.0.2",

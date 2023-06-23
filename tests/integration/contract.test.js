@@ -1,18 +1,19 @@
-const request = require('supertest');
-const app = require('../../src/app');
 const { createContractMock, createProfileMock } = require('../mocks/models');
 const { faker } = require('@faker-js/faker');
+const { agent } = require('../setup');
+const httpStatus = require('http-status');
+const { Contract } = require('../../src/domain');
 
 describe('Contract Routes', () => {
   describe('GET /contracts/:id', () => {
     it('should return a contract by id on a client request', async () => {
       const contract = await createContractMock();
 
-      const res = await request(app)
+      const res = await agent
         .get('/contracts/' + contract.id)
         .set('profile_id', contract.ClientId);
 
-      expect(res.statusCode).toBe(200);
+      expect(res.statusCode).toBe(httpStatus.OK);
       expect(res.body).toHaveProperty('id');
       expect(res.body).toHaveProperty('ClientId');
       expect(res.body).toHaveProperty('ContractorId');
@@ -29,7 +30,7 @@ describe('Contract Routes', () => {
     it('should return a contract by id on a contractor request', async () => {
       const contract = await createContractMock();
 
-      const res = await request(app)
+      const res = await agent
         .get('/contracts/' + contract.id)
         .set('profile_id', contract.ContractorId);
 
@@ -50,33 +51,34 @@ describe('Contract Routes', () => {
     it('should return 401 if the user isn\'t authenticated', async () => {
       const contract = await createContractMock();
 
-      const res = await request(app)
+      const res = await agent
         .get('/contracts/' + contract.id);
 
-      expect(res.statusCode).toBe(401);
+      expect(res.statusCode).toBe(httpStatus.UNAUTHORIZED);
     });
 
     it('should return 403 if the contract doesn\'t belong to the user', async () => {
       const contract = await createContractMock();
       const profile = await createProfileMock();
 
-      const res = await request(app)
+      const res = await agent
         .get('/contracts/' + contract.id)
         .set('profile_id', profile.id);
 
-      expect(res.statusCode).toBe(403);
-      expect(res.text).toBe('contract doesn\'t belong to the user');
+      expect(res.statusCode).toBe(httpStatus.FORBIDDEN);
+      expect(res.text).toBe(`User ${profile.id} cannot access contract ${contract.id}`);
     });
 
     it('should return 404 if contract is not found', async () => {
       const profile = await createProfileMock();
+      const contractId = faker.number.int({ min: 1, max: 100 });
 
-      const res = await request(app)
-        .get('/contracts/' + faker.number.int({ min: 1, max: 100 }))
+      const res = await agent
+        .get('/contracts/' + contractId)
         .set('profile_id', profile.id);
 
-      expect(res.statusCode).toBe(404);
-      expect(res.text).toBe('contract not found');
+      expect(res.statusCode).toBe(httpStatus.NOT_FOUND);
+      expect(res.text).toBe(`Contract ${contractId} not found`);
     });
   });
 
@@ -88,19 +90,19 @@ describe('Contract Routes', () => {
       await createContractMock({ ClientId: profile.id, status: 'active' });
       await createContractMock({ ContractorId: profile.id, status: 'active' });
 
-      const res = await request(app)
+      const res = await agent
         .get('/contracts')
         .set('profile_id', profile.id);
 
-      expect(res.statusCode).toBe(200);
+      expect(res.statusCode).toBe(httpStatus.OK);
       expect(res.body).toHaveLength(2);
     });
 
     it('should return 401 if the user isn\'t authenticated', async () => {
-      const res = await request(app)
+      const res = await agent
         .get('/contracts');
 
-      expect(res.statusCode).toBe(401);
+      expect(res.statusCode).toBe(httpStatus.UNAUTHORIZED);
     });
   });
 });

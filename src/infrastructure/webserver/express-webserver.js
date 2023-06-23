@@ -3,23 +3,13 @@ const httpStatus = require("http-status");
 const bodyParser = require("body-parser");
 
 class ExpressWebServer {
-  constructor() {
-    this.server = express();
-  }
-
-  async init(port, routes) {
+  constructor(routes) {
+    this.app = express();
     this.routes = routes;
-    await this.routersSetup();
-    this.listen(port, () => {
-      console.info(`Listening on port ${port}`);
-    });
+    this.routersSetup();
   }
 
-  listen(port, callback) {
-    this.server.listen(port, callback);
-  }
-
-  async routersSetup() {
+  routersSetup() {
     const router = express.Router();
 
     this.setupLogs(router);
@@ -38,10 +28,10 @@ class ExpressWebServer {
         (req, res) => route.handler(req, res)
       );
     });
-    this.server.use(bodyParser.json());
-    this.server.use(router);
+    this.app.use(bodyParser.json());
+    this.app.use(router);
 
-    this.server.use((error, _req, res, _next) => {
+    this.app.use((error, _req, res, _next) => {
       const status = httpStatus.INTERNAL_SERVER_ERROR;
 
       console.error("Request/Response Error", error);
@@ -50,6 +40,8 @@ class ExpressWebServer {
   }
 
   setupLogs(router) {
+    if (process.env.NODE_ENV === "test") return;
+    
     router.use((req, res, next) => {
       res.on("finish", () => {
         const date = new Date();

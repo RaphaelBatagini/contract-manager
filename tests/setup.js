@@ -1,17 +1,29 @@
-const { Sequelize } = require('sequelize');
+const { loadEnvironmentVariables } = require('../src/infrastructure/config/setup');
+const server = require('../src/server');
+const supertest = require('supertest');
+const { getWebServer } = require('../src/infrastructure/webserver');
+const { sequelize } = require('../src/infrastructure/database');
 
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: './test_database.sqlite3', // Specify a separate database file for testing
-  logging: false,
+const app = getWebServer();
+const agent = supertest.agent(app);
+
+beforeAll((done) => {
+  loadEnvironmentVariables();
+  server.listen(+process.env.PORT, () => {
+    done();
+  });
+});
+
+afterAll((done) => {
+  sequelize.close();
+  server.close(done);
 });
 
 beforeEach(async () => {
-  await sequelize.sync({ force: true }); // Drops existing tables and recreates them
+  await sequelize.sync({ force: true });
 });
 
-afterAll(async () => {
-  await sequelize.close();
-});
-
-module.exports = sequelize;
+module.exports = {
+  sequelize,
+  agent,
+};
