@@ -4,8 +4,8 @@ const depositAmountIntoBalanceFactory = require("../../application/use-cases/dep
 const ClientNotFoundError = require("../../application/errors/client-not-found-error");
 const DepositAmountExceedsLimitError = require("../../application/errors/deposit-amount-exceeds-limit-error");
 const NoJobFoundInPeriodError = require("../../application/errors/no-job-found-in-period-error");
-const httpStatus = require("http-status");
 const NoPaymentFoundInPeriodError = require("../../application/errors/no-payment-found-in-period-error");
+const httpStatus = require("http-status");
 
 class ProfilesHttpController {
   async deposit(request, response) {
@@ -16,12 +16,13 @@ class ProfilesHttpController {
     const depositAmountIntoBalance = depositAmountIntoBalanceFactory();
 
     try {
-      const jobs = await depositAmountIntoBalance.execute(
+      const balance = await depositAmountIntoBalance.execute(
         profile.id,
         clientId,
         depositAmount
       );
-      return response.json(jobs);
+
+      return response.json(balance);
     } catch (error) {
       if (error instanceof ClientNotFoundError) {
         return response.status(httpStatus.NOT_FOUND).end(error.message);
@@ -46,7 +47,7 @@ class ProfilesHttpController {
 
     try {
       const profession = await bestProfession.execute(start, end);
-      return response.json({ profession });
+      return response.json(profession);
     } catch (error) {
       if (error instanceof NoJobFoundInPeriodError) {
         return response.status(httpStatus.NOT_FOUND).end(error.message);

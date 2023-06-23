@@ -25,7 +25,7 @@ class DepositAmountIntoBalance {
     }
 
     client.balance += depositAmount;
-    await client.save();
+    await this.profileRepository.save(client);
 
     return client;
   }
