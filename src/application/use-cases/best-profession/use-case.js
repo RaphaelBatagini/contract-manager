@@ -6,7 +6,7 @@ class BestProfession {
   }
 
   async execute (startDate, endDate) {
-    const professions = await this.jobsRepository.getProfessionsIncome(startDate, endDate);
+    const professions = await this.jobsRepository.getProfessionsIncome(startDate, endDate, 1);
 
     if (!professions.length) {
       throw new NoJobFoundInPeriodError(startDate, endDate);

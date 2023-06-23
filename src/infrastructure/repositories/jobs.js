@@ -30,7 +30,7 @@ class JobsRepository extends Repository {
     });
   }
 
-  getProfessionsIncome(start, end, limit = 1) {
+  getProfessionsIncome(start, end, limit) {
     return this.model.findAll({
       attributes: [
         [
@@ -63,6 +63,45 @@ class JobsRepository extends Repository {
       },
       group: ["`Contract->Contractor`.profession"],
       order: [[Sequelize.literal("totalEarned"), "DESC"]],
+      limit,
+    });
+  }
+
+  getClientsTotalPayments(start, end, limit) {
+    return this.model.findAll({
+      attributes: [
+        [Sequelize.literal("`Contract->Client`.id"), "id"],
+        [
+          Sequelize.literal(
+            "`Contract->Client`.firstName || ' ' || `Contract->Client`.lastName"
+          ),
+          "fullName",
+        ],
+        [Sequelize.fn("sum", Sequelize.col("price")), "paid"],
+      ],
+      include: [
+        {
+          model: Contract,
+          as: "Contract",
+          include: [
+            {
+              model: Profile,
+              as: "Client",
+              where: {
+                type: "client",
+              },
+            },
+          ],
+        },
+      ],
+      where: {
+        paid: true,
+        paymentDate: {
+          [Sequelize.Op.between]: [new Date(start), new Date(end)],
+        },
+      },
+      group: ["`Contract->Client`.id"],
+      order: [[Sequelize.literal("paid"), "DESC"]],
       limit,
     });
   }
