@@ -99,6 +99,10 @@ Thank you and good luck! 🙏
 
 # TODO
 - Improve unit tests coverage
+- Create missing integration tests
 - Run tests on pull requests using github actions
 - Create a docker environment
+- Uncouple domain classes from sequelize models
+- Move some business rules from repositories into use cases
+- Implement TypeScript to make a better use of Clean Architecture, defining interfaces and other contracts
 

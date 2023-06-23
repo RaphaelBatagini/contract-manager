@@ -1,6 +1,7 @@
 const { Sequelize } = require("sequelize");
 const { Contract, Job, Profile } = require("../../domain");
 const Repository = require("./repository");
+const { sequelize } = require("../database");
 
 class JobsRepository extends Repository {
   constructor() {

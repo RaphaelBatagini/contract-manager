@@ -12,9 +12,7 @@ const agent = supertest.agent(app);
 
 beforeAll((done) => {
   loadEnvironmentVariables();
-  server.listen(+process.env.PORT, () => {
-    console.log('listening on port ' + process.env.PORT);
-  });
+  server.listen(+process.env.PORT);
   server.once('listening', done);
 });
 
