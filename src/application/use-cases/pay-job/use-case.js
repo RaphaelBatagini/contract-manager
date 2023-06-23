@@ -4,9 +4,10 @@ const JobAlreadyPaidError = require('../../errors/job-already-paid-error');
 const InsufficientFundsError = require('../../errors/insufficient-funds-error');
 
 class PayJob {
-  constructor (jobsRepository, profilesRepository) {
+  constructor (jobsRepository, profilesRepository, contractRepository) {
     this.jobsRepository = jobsRepository;
     this.profilesRepository = profilesRepository;
+    this.contractRepository = contractRepository;
   }
 
   async execute (id, profileId) {
@@ -16,7 +17,9 @@ class PayJob {
       throw new JobNotFoundError(id);
     }
 
-    if (job.ClientId !== profileId) {
+    const contract = await this.contractRepository.get(job.ContractId);
+
+    if (contract.ClientId !== profileId) {
       throw new UserCannotAccessJobError(profileId, id);
     }
 
@@ -25,7 +28,7 @@ class PayJob {
     }
   
     const client = await this.profilesRepository.get(profileId);
-    const contractor = await this.profilesRepository.get(job.Contract.ContractorId);
+    const contractor = await this.profilesRepository.get(contract.ContractorId);
   
     if (client.balance < job.price) {
       throw new InsufficientFundsError();

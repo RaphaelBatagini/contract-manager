@@ -1,8 +1,27 @@
 const { createContractMock, createProfileMock } = require('../mocks/models');
 const { faker } = require('@faker-js/faker');
-const { agent } = require('../setup');
+const { sequelize } = require('../setup');
 const httpStatus = require('http-status');
-const { Contract } = require('../../src/domain');
+const { loadEnvironmentVariables } = require('../../src/infrastructure/config/setup');
+const server = require('../../src/server');
+const supertest = require('supertest');
+const { getWebServer } = require('../../src/infrastructure/webserver');
+
+const app = getWebServer();
+const agent = supertest.agent(app);
+
+beforeAll((done) => {
+  loadEnvironmentVariables();
+  server.listen(+process.env.PORT, () => {
+    console.log('listening on port ' + process.env.PORT);
+  });
+  server.once('listening', done);
+});
+
+afterAll(async () => {
+  await sequelize.close();
+  server.close();
+});
 
 describe('Contract Routes', () => {
   describe('GET /contracts/:id', () => {
