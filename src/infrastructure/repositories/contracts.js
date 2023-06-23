@@ -1,10 +1,27 @@
+const { Sequelize } = require("sequelize");
+const { Contract } = require("../../domain");
+
 class ContractsRepository {
   constructor() {
-    this.model = require("../../domain/contract");
+    this.model = Contract;
   }
 
   async get(id) {
     return await this.model.findByPk(id);
+  }
+
+  async getAll(userId) {
+    return await this.model.findAll({
+      where: {
+        [Sequelize.Op.or]: [
+          { ClientId: userId },
+          { ContractorId: userId },
+        ],
+        status: {
+          [Sequelize.Op.ne]: "terminated",
+        },
+      },
+    });
   }
 }
 

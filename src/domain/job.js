@@ -1,7 +1,11 @@
 const Sequelize = require("sequelize");
 const { sequelize } = require("../infrastructure/database");
 
-class Job extends Sequelize.Model {}
+class Job extends Sequelize.Model {
+  static associate(models) {
+    Job.belongsTo(models.Contract);
+  }
+}
 Job.init(
   {
     description: {

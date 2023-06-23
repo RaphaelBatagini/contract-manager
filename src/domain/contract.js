@@ -1,9 +1,13 @@
 const Sequelize = require("sequelize");
-const Profile = require("./profile");
-const Job = require("./job");
 const { sequelize } = require("../infrastructure/database");
 
-class Contract extends Sequelize.Model {}
+class Contract extends Sequelize.Model {
+  static associate(models) {
+    Contract.hasMany(models.Job);
+    Contract.belongsTo(models.Profile, { as: "Contractor" });
+    Contract.belongsTo(models.Profile, { as: "Client" });
+  }
+}
 Contract.init(
   {
     terms: {
@@ -19,7 +23,5 @@ Contract.init(
     modelName: "Contract",
   }
 );
-
-Contract.hasMany(Job);
 
 module.exports = Contract;

@@ -1,23 +1,23 @@
-const getContractFactory = require("../../application/use-cases/get-contract/factory");
-const listContractFactory = require("../../application/use-cases/list-contracts/factory");
+const listUnpaidJobsFactory = require("../../application/use-cases/list-unpaid-jobs/factory");
 const ContractNotFoundError = require("../../application/errors/contract-not-found-error");
 const UserCannotAccessContractError = require("../../application/errors/user-cannot-access-contract-error");
 
-class ContractsHttpController {
-  async index(request, response) {
+class JobsHttpController {
+  async listUnpaid(request, response) {
     const { profile } = request;
 
-    const listContracts = listContractFactory();
+    const listUnpaidJobs = listUnpaidJobsFactory();
 
     try {
-      const contracts = await listContracts.execute(profile.id);
-      return response.json(contracts);
+      const jobs = await listUnpaidJobs.execute(profile.id);
+      return response.json(jobs);
     } catch (error) {
+      throw error;
       return response.status(500).end("internal server error");
     }
   }
 
-  async show(request, response) {
+  async pay(request, response) {
     const { id } = request.params;
     const { profile } = request;
 
@@ -35,11 +35,9 @@ class ContractsHttpController {
         return response.status(403).end("contract doesn't belong to the user");
       }
 
-      throw error;
-
       return response.status(500).end("internal server error");
     }
   }
 }
 
-module.exports = ContractsHttpController;
+module.exports = JobsHttpController;

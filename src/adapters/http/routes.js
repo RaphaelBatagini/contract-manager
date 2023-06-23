@@ -1,5 +1,6 @@
 const { getProfile } = require('../../infrastructure/middleware/getProfile');
 const ContractsHttpController = require('./contracts-http-controller');
+const JobsHttpController = require('./jobs-http-controller');
 
 const routes = [
   {
@@ -11,12 +12,14 @@ const routes = [
   {
     method: 'GET',
     path: '/contracts',
-    handler: ContractsHttpController.prototype.show,
+    handler: ContractsHttpController.prototype.index,
+    middlewares: [getProfile],
   },
   {
     method: 'GET',
     path: '/jobs/unpaid',
-    handler: ContractsHttpController.prototype.show,
+    handler: JobsHttpController.prototype.listUnpaid,
+    middlewares: [getProfile],
   },
   {
     method: 'POST',

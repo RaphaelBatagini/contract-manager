@@ -1,8 +1,15 @@
 const Sequelize = require("sequelize");
-const Contract = require("./contract");
 const { sequelize } = require("../infrastructure/database");
 
-class Profile extends Sequelize.Model {}
+class Profile extends Sequelize.Model {
+  static associate(models) {
+    Profile.hasMany(models.Contract, { as: "Client", foreignKey: "ClientId" });
+    Profile.hasMany(models.Contract, {
+      as: "Contractor",
+      foreignKey: "ContractorId",
+    });
+  }
+}
 Profile.init(
   {
     firstName: {
@@ -29,8 +36,5 @@ Profile.init(
     modelName: "Profile",
   }
 );
-
-Profile.hasMany(Contract, { as: "Contractor", foreignKey: "ContractorId" });
-Profile.hasMany(Contract, { as: "Client", foreignKey: "ClientId" });
 
 module.exports = Profile;
