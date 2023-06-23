@@ -32,8 +32,8 @@ afterAll(async () => {
 describe("Job Routes", () => {
   describe("GET /jobs/unpaid", () => {
     it("should return all unpaid jobs for the current user", async () => {
-      const contract1 = await createContractMock();
-      const contract2 = await createContractMock();
+      const contract1 = await createContractMock({ status: "in_progress" });
+      const contract2 = await createContractMock({ status: "new" });
       const job1 = await createJobMock({
         paid: false,
         ContractId: contract1.id,
