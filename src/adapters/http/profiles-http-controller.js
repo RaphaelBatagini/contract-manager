@@ -2,6 +2,8 @@ const depositAmountIntoBalanceFactory = require("../../application/use-cases/dep
 const ClientNotFoundError = require("../../application/errors/client-not-found-error");
 const DepositAmountExceedsLimitError = require("../../application/errors/deposit-amount-exceeds-limit-error");
 const httpStatus = require("http-status");
+const bestProfessionFactory = require("../../application/use-cases/best-profession/factory");
+const NoJobFoundInPeriodError = require("../../application/errors/no-job-found-in-period-error");
 
 class ProfilesHttpController {
   async deposit(request, response) {
@@ -32,6 +34,23 @@ class ProfilesHttpController {
       return response
         .status(httpStatus.INTERNAL_SERVER_ERROR)
         .end("internal server error");
+    }
+  }
+
+  async bestProfession(request, response) {
+    const { start, end } = request.query;
+
+    const bestProfession = bestProfessionFactory();
+
+    try {
+      const profession = await bestProfession.execute(start, end);
+      return response.json({ profession });
+    } catch (error) {
+      if (error instanceof NoJobFoundInPeriodError) {
+        return response.status(httpStatus.NOT_FOUND).end(error.message);
+      }
+
+      return response.status(500).end("internal server error");
     }
   }
 }
