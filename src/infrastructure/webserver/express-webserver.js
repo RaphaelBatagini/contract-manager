@@ -38,8 +38,8 @@ class ExpressWebServer {
         (req, res) => route.handler(req, res)
       );
     });
-    this.server.use(router);
     this.server.use(bodyParser.json());
+    this.server.use(router);
 
     this.server.use((error, _req, res, _next) => {
       const status = httpStatus.INTERNAL_SERVER_ERROR;
