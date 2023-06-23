@@ -8,58 +8,6 @@ app.set("sequelize", sequelize);
 app.set("models", sequelize.models);
 
 /**
- * @returns all non terminated contracts for the current user
- */
-app.get("/contracts", getProfile, async (req, res) => {
-  const { Contract } = req.app.get("models");
-  const { profile } = req;
-
-  const contracts = await Contract.findAll({
-    where: {
-      [Sequelize.Op.or]: [
-        { ClientId: profile.id },
-        { ContractorId: profile.id },
-      ],
-      status: {
-        [Sequelize.Op.ne]: "terminated",
-      },
-    },
-  });
-
-  res.json(contracts);
-});
-
-/**
- * @returns all unpaid jobs for the current user
- */
-app.get("/jobs/unpaid", getProfile, async (req, res) => {
-  const { Job, Contract } = req.app.get("models");
-  const { profile } = req;
-
-  const jobs = await Job.findAll({
-    where: {
-      [Sequelize.Op.or]: [{ paid: false }, { paid: null }],
-    },
-    include: [
-      {
-        model: Contract,
-        where: {
-          status: {
-            [Sequelize.Op.ne]: "terminated",
-          },
-          [Sequelize.Op.or]: [
-            { ClientId: profile.id },
-            { ContractorId: profile.id },
-          ],
-        },
-      },
-    ],
-  });
-
-  res.json(jobs);
-});
-
-/**
  * @returns the paid job
  */
 app.post("/jobs/:job_id/pay", getProfile, async (req, res) => {

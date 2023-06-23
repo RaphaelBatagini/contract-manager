@@ -4,7 +4,7 @@ class ListUnpaidJobs {
   }
 
   async execute (profileId) {
-    return await this.jobsRepository.getUnpaid(profileId);
+    return await this.jobsRepository.getAllUnpaid(profileId);
   }
 }
 

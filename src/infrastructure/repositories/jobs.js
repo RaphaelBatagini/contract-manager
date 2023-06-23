@@ -1,16 +1,14 @@
 const { Sequelize } = require("sequelize");
 const { Contract, Job } = require("../../domain");
+const Repository = require("./repository");
 
-class JobsRepository {
+class JobsRepository extends Repository {
   constructor() {
+    super();
     this.model = Job;
   }
 
-  async get(id) {
-    return await this.model.findByPk(id);
-  }
-
-  async getUnpaid(userId) {
+  async getAllUnpaid(userId) {
     return await this.model.findAll({
       where: {
         [Sequelize.Op.or]: [{ paid: false }, { paid: null }],

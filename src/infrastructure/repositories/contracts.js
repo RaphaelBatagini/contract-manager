@@ -1,8 +1,10 @@
 const { Sequelize } = require("sequelize");
 const { Contract } = require("../../domain");
+const Repository = require("./repository");
 
-class ContractsRepository {
+class ContractsRepository extends Repository {
   constructor() {
+    super();
     this.model = Contract;
   }
 

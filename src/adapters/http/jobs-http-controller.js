@@ -1,6 +1,10 @@
 const listUnpaidJobsFactory = require("../../application/use-cases/list-unpaid-jobs/factory");
-const ContractNotFoundError = require("../../application/errors/contract-not-found-error");
-const UserCannotAccessContractError = require("../../application/errors/user-cannot-access-contract-error");
+const payJobFactory = require("../../application/use-cases/pay-job/factory");
+const JobNotFoundError = require("../../application/errors/job-not-found-error");
+const UserCannotAccessJobError = require("../../application/errors/user-cannot-access-job-error");
+const JobAlreadyPaidError = require("../../application/errors/job-already-paid-error");
+const InsufficientFundsError = require("../../application/errors/insufficient-funds-error");
+const httpStatus = require("http-status");
 
 class JobsHttpController {
   async listUnpaid(request, response) {
@@ -12,30 +16,41 @@ class JobsHttpController {
       const jobs = await listUnpaidJobs.execute(profile.id);
       return response.json(jobs);
     } catch (error) {
-      throw error;
-      return response.status(500).end("internal server error");
+      return response
+        .status(httpStatus.INTERNAL_SERVER_ERROR)
+        .end("internal server error");
     }
   }
 
   async pay(request, response) {
-    const { id } = request.params;
     const { profile } = request;
+    const { id } = request.params;
 
-    const getContract = getContractFactory();
+    const payJob = payJobFactory();
 
     try {
-      const contract = await getContract.execute(id, profile.id);
-      return response.json(contract);
+      const job = await payJob.execute(id, profile.id);
+      return response.json(job);
     } catch (error) {
-      if (error instanceof ContractNotFoundError) {
-        return response.status(404).end("contract not found");
+      if (error instanceof JobNotFoundError) {
+        return response.status(httpStatus.NOT_FOUND).end(error.message);
       }
 
-      if (error instanceof UserCannotAccessContractError) {
-        return response.status(403).end("contract doesn't belong to the user");
+      if (error instanceof UserCannotAccessJobError) {
+        return response.status(httpStatus.FORBIDDEN).end(error.message);
       }
 
-      return response.status(500).end("internal server error");
+      if (error instanceof JobAlreadyPaidError) {
+        return response.status(httpStatus.BAD_REQUEST).end(error.message);
+      }
+
+      if (error instanceof InsufficientFundsError) {
+        return response.status(httpStatus.BAD_REQUEST).end(error.message);
+      }
+
+      return response
+        .status(httpStatus.INTERNAL_SERVER_ERROR)
+        .end("internal server error");
     }
   }
 }

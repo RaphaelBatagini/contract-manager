@@ -24,7 +24,8 @@ const routes = [
   {
     method: 'POST',
     path: '/jobs/:id/pay',
-    handler: ContractsHttpController.prototype.show,
+    handler: JobsHttpController.prototype.pay,
+    middlewares: [getProfile],
   },
   {
     method: 'POST',
