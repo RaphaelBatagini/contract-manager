@@ -115,5 +115,5 @@ npm run test
 - Implement documentation using Swagger
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](./LICENSE.md).
 Feel free to contribute and provide feedback.
