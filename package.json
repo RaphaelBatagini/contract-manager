@@ -1,5 +1,6 @@
 {
-  "name": "deel-task",
+  "name": "contract-manager",
+  "author": "Raphael Batagini",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
